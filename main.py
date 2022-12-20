@@ -163,14 +163,13 @@ class GraphScene(Scene):
             stroke_color=YELLOW
         )
 
-        lines = VGroup()
-        lines.add(dashed_line_vertical, dashed_line_horizontal)
+        #lines = VGroup()
+        #lines.add(dashed_line_vertical, dashed_line_horizontal)
 
-        self.add(path1, dot1, graph_value_text1, dashed_line_horizontal, dashed_line_vertical)
+        self.add(path1, dot1, graph_value_text1)
         self.play(DrawBorderThenFill(ax), Write(labels), Write(graph_value_text1))
         self.play(MoveAlongPath(dot1, graph1, rate_func=smooth),
-                  value_tracker1.animate.set_value(end_x_value),
-                  MoveAlongPath(lines, graph1, rate_func=smooth), run_time=5)
+                  value_tracker1.animate.set_value(end_x_value), run_time=5)
         self.remove(path1)
         self.add(graph1)
 
@@ -239,7 +238,7 @@ class GraphScene(Scene):
         # )
 
         self.create_graph(
-            [0, 100000, 1000], [2500, 3200, 100], [3, 5000, 10000, 15000, 30000], [2500, 2700, 2900, 3100, 3200],
+            [0, 100000, 10000], [2200, 3500, 100], [0, 20000, 50000, 70000, 90000, 100000], [2200, 2500, 2700, 2900, 3100, 3300],
             0, "H", "v(H)", lambda x: MathModel.get_first_escape_velocity(H=x),
             100000, MathModel.first_escape_velocity_formula,
             lambda x: MathModel.get_first_escape_velocity(H=x) * sqrt(2)
