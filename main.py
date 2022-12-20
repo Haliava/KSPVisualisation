@@ -7,41 +7,9 @@ G = 6.6743 * (10 ** (-11))  # гравитационная постоянная
 H = 0
 earthR = 600000
 earthM = 5.29 * 10 ** 22  # масса Земли
-marsM = 6.4171 * 10 ** 23  # масса Марса
-Tsyn_Mars = 2.135  # синодичечский период Марса
-Tsyn_Earth = 1.0  # т.к. взлёт производится с поверзности Земли, о её синодический пероид можно принять за 1
 
 
 class MathModel:
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def delta_horizontal_speed(P, Ax, v, m):
-        """
-        dVx / dt
-
-        :param P: сила тяги двигателя
-        :param Ax: продольная сила
-        :param v: угол тангажа
-        :param m: масса летательного аппарата
-        :return: dVx / dt
-        """
-        return (P + Ax) * cos(v) / m
-
-    @staticmethod
-    def delta_vertical_speed(P, Ay, v, m):
-        """
-        dVy / dt
-
-        :param P: сила тяги двигателя
-        :param Ay: нормальная сила
-        :param v: угол тангажа
-        :param m: масса летательного аппарата
-        :return: dVy / dt
-        """
-        return (P + Ay) * sin(v) / m
-
     first_escape_velocity_formula = r"\sqrt{\frac{GM}{R + h}}"
 
     @staticmethod
@@ -54,41 +22,6 @@ class MathModel:
         :return: вторую космическая скорость
         """
         return sqrt(G * planetM / (planetR + H))
-
-    @staticmethod
-    def get_traction_force(Wsec, Va, pa, ph, Sa):
-        """
-        Сила тяги ракетного двигателя
-
-        :param Wsec: секундный расход массы топлива
-        :param Va: скорость выброса Wsec
-        :param pa: высота 1
-        :param ph: высота 2
-        :param Sa: площадь летательного аппарата
-        :return: силу тяги ракетного двигателя
-        """
-        return Wsec * Va + (pa - ph) * Sa
-
-    @staticmethod
-    def get_Tsyn_vessel():
-        """
-        Синодический период
-
-        :return: синодический период тела
-        """
-        return Tsyn_Earth * Tsyn_Mars / (Tsyn_Mars - Tsyn_Earth)
-
-    @staticmethod
-    def tsiolkovsky_formula(u, m0, m):
-        """
-        Формула Циолковского
-
-        :param u: удельный импульс ракетного двигателя
-        :param m0: начальная масса летательного аппарата
-        :param m: конечная масса летательного аппарата
-        :return: скорость, которую развивает летательный аппарат под воздействием тяги
-        """
-        return u * log(m0 / m)
 
 
 class GraphScene(Scene):
