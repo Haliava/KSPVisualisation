@@ -7,10 +7,14 @@ G = 6.6743 * (10 ** (-11))  # гравитационная постоянная
 H = 0
 earthR = 600000
 earthM = 5.29 * 10 ** 22  # масса Земли
+marsM = 6.4171 * 10 ** 23  # масса Марса
+Tsyn_Mars = 2.135  # синодичечский период Марса
+Tsyn_Earth = 1.0  # т.к. взлёт производится с поверзности Земли, о её синодический пероид можно принять за 1
 
 
 class MathModel:
-    first_escape_velocity_formula = r"\sqrt{\frac{GM}{R + h}}"
+    def __init__(self):
+        pass
 
     @staticmethod
     def get_first_escape_velocity(planetM=earthM, planetR=earthR, H=H):
@@ -19,9 +23,20 @@ class MathModel:
 
         :param planetM:
         :param planetR:
-        :return: вторую космическая скорость
+        :return: первую космическая скорость
         """
         return sqrt(G * planetM / (planetR + H))
+
+    @staticmethod
+    def get_second_escape_velocity(planetM=earthM, planetR=earthR, H=H):
+        """
+        Вторая космическая скорость
+
+        :param planetM:
+        :param planetR:
+        :return: вторую космическая скорость
+        """
+        return sqrt(G * planetM / (planetR + H)) * sqrt(2)
 
 
 class GraphScene(Scene):
@@ -31,9 +46,25 @@ class GraphScene(Scene):
     def create_graph(
             self,
             x_range, y_range, numbers_to_include_x, numbers_to_include_y,  # axis
-            init_x, name_x_axis, name_y_axis, func,  # init values
-            end_x_value, math_tex_func, func2  # end values
+            init_x, end_x_value, name_x_axis, name_y_axis,  # values
+            func, func2  # funcs
     ):
+        """
+        Создаёт ось с друмя графиками
+
+        :param x_range: начало, конец, частота засечек оси абсцисс
+        :param y_range: начало, конец, частота засечек оси ординат
+        :param numbers_to_include_x: какие из значений оси абсцисс подписать
+        :param numbers_to_include_y:какие из значений оси ординат подписать
+        :param init_x: стартовый X
+        :param end_x_value: конечный X
+        :param name_x_axis: как подписать ось абсцисс
+        :param name_y_axis: как подписать ось ординат
+        :param func: первая функция
+        :param func2: вторая функция
+        :return: график + его анимации
+        """
+
         ax = Axes(
             x_range=x_range,
             y_range=y_range,
@@ -48,8 +79,6 @@ class GraphScene(Scene):
             tips=False
         )
         labels = ax.get_axis_labels(x_label=name_x_axis, y_label=name_y_axis)
-
-        value = name_y_axis
 
         def create_path(func, color):
             value_tracker = ValueTracker(init_x)
@@ -79,25 +108,8 @@ class GraphScene(Scene):
         def update_func_value_text(text, func, dot, value_tracker):
             text.set_value(func(value_tracker.get_value())).next_to(dot, DOWN, buff=0.25)
 
-        graph1, graph_value_text1, path1, dot1, value_tracker1 = create_path(func, MAROON_A)
+        graph1, graph_value_text1, path1, dot1, value_tracker1 = create_path(func, RED)
         graph2, graph_value_text2, path2, dot2, value_tracker2 = create_path(func2, RED)
-
-        dashed_line_horizontal = DashedLine(
-            start=ax.c2p(0, func(value_tracker1.get_value())),
-            end=ax.c2p(value_tracker1.get_value(), func(value_tracker1.get_value())),
-            stroke_width=4,
-            stroke_color=YELLOW
-        )
-
-        dashed_line_vertical = DashedLine(
-            start=ax.c2p(value_tracker1.get_value(), 0),
-            end=ax.c2p(value_tracker1.get_value(), func(value_tracker1.get_value())),
-            stroke_width=4,
-            stroke_color=YELLOW
-        )
-
-        #lines = VGroup()
-        #lines.add(dashed_line_vertical, dashed_line_horizontal)
 
         self.add(path1, dot1, graph_value_text1)
         self.play(DrawBorderThenFill(ax), Write(labels), Write(graph_value_text1))
@@ -114,65 +126,32 @@ class GraphScene(Scene):
         self.remove(path2)
         self.add(graph2)
 
-        '''graph_value_text1.remove_updater(update_func_value_text)
+        graph_value_text1.remove_updater(update_func_value_text)
         graph_value_text2.remove_updater(update_func_value_text)
 
         graphObj = Mobject()
-        graphObj.submobjects = [ax, dot1, graph1, labels]
+        graphObj.submobjects = [ax, dot1, dot2, graph1, graph2, labels]
 
         self.wait()
 
         ax.axis_config["numbers_to_include"] = []
         ax.axis_labels = ["", ""]
 
-        self.play(
-            graphObj.animate.scale(0.3),
-            graph_value_text1.animate.move_to(graphObj.get_center()), rate_func=linear, run_time=1.5
-        )
-
-        funcText = MathTex(f"{value} = " + math_tex_func).next_to(graphObj, UP)
-        funcText.font_size = DEFAULT_FONT_SIZE
-
-        graph_value_text1.set_value(func(value_tracker1.get_value()))
-        graph_value_text1.font_size = DEFAULT_FONT_SIZE
-        self.play(FadeIn(funcText))
-
-        graphObj.submobjects.append(funcText)
-        graphObj.submobjects.append(graph_value_text1)
-        self.wait()
-        self.play(graph_value_text1.animate.scale(1.5))
-
-        if self.graphCount <= 0:
-            self.play(
-                graphObj.animate.to_edge(UR), run_time=2, buff=0.5, rate_func=smooth
-            )
-        else:
-            self.play(
-                graphObj.animate.next_to(self.drawnGraphs[-1], DOWN), buff=1
-            )
-        self.wait()
-
-        self.graphCount += 1
-        self.drawnGraphs.append(graphObj)'''
-
     def construct(self):
-        # self.create_graph(
-        #    [100, 1000, 100], [500, 3000, 1000], [100, 300, 700, 1000], [500, 1000, 1500, 2000, 2500, 3000],
-        #    100, "R", "v(R)", lambda x: MathModel.get_first_escape_velocity(planetR=x * 10000),
-        #    1000, MathModel.first_escape_velocity_formula,
-        #    lambda x: MathModel.get_first_escape_velocity(planetR=x * 10000) * sqrt(2)
-        # )
+        '''self.create_graph(
+           [100, 1000, 100], [500, 3000, 1000], [100, 300, 700, 900], [500, 1000, 1500, 2000, 2500, 3000],
+           100, 1000, "R,m*1000", "v(R),m/s", lambda x: MathModel.get_first_escape_velocity(planetR=x * 10000),
+           lambda x: MathModel.get_second_escape_velocity(planetR=x * 10000)
+        )'''
 
-        # self.create_graph(
-        #    [3, 30000, 500], [500, 25000, 1000], [3, 5000, 10000, 15000, 30000], np.arange(500, 30000 + 1, 5000),
-        #    3, "M", "v(M)", lambda x: MathModel.get_first_escape_velocity(planetM=x * 10 ** 20),
-        #    30000, MathModel.first_escape_velocity_formula,
-        #    lambda x: MathModel.get_first_escape_velocity(planetM=x * 10 ** 20) * sqrt(2)
-        # )
+        '''self.create_graph(
+           [3, 30000, 5000], [500, 25000, 5000], np.arange(500, 30000 + 1, 5000), np.arange(500, 25000 + 1, 5000),
+           3, 30000, "M,kg*10^{20}", "v(M),m/s", lambda x: MathModel.get_first_escape_velocity(planetM=x * 10 ** 20),
+           lambda x: MathModel.get_second_escape_velocity(planetM=x * 10 ** 20)
+        )'''
 
         self.create_graph(
-            [0, 100000, 10000], [2200, 3500, 100], [0, 20000, 50000, 70000, 90000, 100000], [2200, 2500, 2700, 2900, 3100, 3300],
-            0, "H", "v(H)", lambda x: MathModel.get_first_escape_velocity(H=x),
-            100000, MathModel.first_escape_velocity_formula,
-            lambda x: MathModel.get_first_escape_velocity(H=x) * sqrt(2)
+            [70000, 200000, 20000], [2700, 3500, 200], np.arange(70000, 200001, 20000), np.arange(2700, 3500, 200),
+            70000, 200000, "H,m", "v(H),m/s", lambda x: MathModel.get_second_escape_velocity(H=x),
+            lambda x: MathModel.get_first_escape_velocity(H=x)
         )
